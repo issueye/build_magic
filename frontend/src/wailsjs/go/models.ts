@@ -354,6 +354,7 @@ export namespace model {
 	    // Go type: time
 	    updatedAt: any;
 	    pro_id: string;
+	    var_type: number;
 	    key: string;
 	    value: string;
 	    mark: string;
@@ -368,6 +369,7 @@ export namespace model {
 	        this.createdAt = this.convertValues(source["createdAt"], null);
 	        this.updatedAt = this.convertValues(source["updatedAt"], null);
 	        this.pro_id = source["pro_id"];
+	        this.var_type = source["var_type"];
 	        this.key = source["key"];
 	        this.value = source["value"];
 	        this.mark = source["mark"];
@@ -393,6 +395,7 @@ export namespace model {
 	}
 	export class VariableBase {
 	    pro_id: string;
+	    var_type: number;
 	    key: string;
 	    value: string;
 	    mark: string;
@@ -404,6 +407,7 @@ export namespace model {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.pro_id = source["pro_id"];
+	        this.var_type = source["var_type"];
 	        this.key = source["key"];
 	        this.value = source["value"];
 	        this.mark = source["mark"];

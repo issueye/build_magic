@@ -12,10 +12,11 @@ type Variable struct {
 }
 
 type VariableBase struct {
-	ProID string `binding:"required" label:"项目编码" gorm:"column:pro_id;size:20;comment:项目编码;" json:"pro_id"` // 项目编码
-	Key   string `binding:"required" label:"键" gorm:"column:key;size:100;comment:键;" json:"key"`            // 键
-	Value string `binding:"required" label:"参数值" gorm:"column:value;size:2000;comment:参数值;" json:"value"`   // 参数值
-	Mark  string `binding:"required" label:"备注" gorm:"column:mark;size:2000;comment:备注;" json:"mark"`       // 备注
+	ProID   string `binding:"required" label:"项目编码" gorm:"column:pro_id;size:20;comment:项目编码;" json:"pro_id"`      // 项目编码
+	VarType int    `binding:"required" label:"变量类型" gorm:"column:var_type;type:int;comment:变量类型;" json:"var_type"` //  变量类型 0 系统变量 1 项目变量
+	Key     string `binding:"required" label:"键" gorm:"column:key;size:100;comment:键;" json:"key"`                 // 键
+	Value   string `binding:"required" label:"参数值" gorm:"column:value;size:2000;comment:参数值;" json:"value"`        // 参数值
+	Mark    string `binding:"required" label:"备注" gorm:"column:mark;size:2000;comment:备注;" json:"mark"`            // 备注
 }
 
 func (Variable) TableName() string {

@@ -9,7 +9,6 @@ import (
 	"github.com/issueye/build_magic/backend/global"
 	"github.com/issueye/build_magic/backend/logic"
 	"github.com/issueye/build_magic/backend/pkg/db"
-	"github.com/issueye/build_magic/backend/service"
 )
 
 // 初始化其他数据
@@ -36,17 +35,6 @@ func InitData() {
 
 	if err != nil {
 		panic(fmt.Errorf("初始化表失败 %s", err.Error()))
-	}
-
-	err = service.NewUserGroup().CreateAdminNonExistent()
-	if err != nil {
-		panic("检查管理员用户组信息失败 " + err.Error())
-	}
-
-	// 创建 admin 用户
-	err = service.NewUser().CreateAdminNonExistent()
-	if err != nil {
-		panic("初始化数据失败 " + err.Error())
 	}
 
 	// 初始化
