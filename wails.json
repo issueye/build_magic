@@ -1,0 +1,23 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "build_magic",
+  "outputfilename": "build_magic",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "assetdir": "./frontend/dist",
+  "author": {
+    "name": "issueye",
+    "email": "issueye@yeah.net"
+  },
+  "wailsjsdir":"./frontend/src",
+  "info": {
+    "companyName": "issueye",
+    "productName": "issueye",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright @ isssueye 2023",
+    "comments":"go 程序的编译打包工具"
+  },
+  "nsisType":"multiple"
+}

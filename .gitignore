@@ -1,0 +1,22 @@
+# dependencies
+node_modules
+build
+dist
+runtime
+
+# env
+.env
+.env.*
+!.env.example
+
+# IDE files
+.vscode
+.idea
+
+# OS files
+.DS_Store
+**/.DS_Store
+.DS_Store?
+
+*.log
+*.db
