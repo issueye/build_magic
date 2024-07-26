@@ -56,6 +56,14 @@ func (owner *BuildProjectService) GetById(id string) (*model.BuildProject, error
 	return data, err
 }
 
+// GetById
+// 通过ID查询[构建项目]数据
+func (owner *BuildProjectService) GetByTpCode(id string) (*model.BuildProject, error) {
+	data := new(model.BuildProject)
+	err := owner.GetDB().Model(&model.BuildProject{}).Where("code_id = ?", id).Find(data).Error
+	return data, err
+}
+
 // GetByName
 // 通过名称[构建项目]数据
 func (owner *BuildProjectService) GetByName(name string) (*model.BuildProject, error) {

@@ -6,7 +6,6 @@ import (
 	"github.com/issueye/build_magic/backend/common/model"
 	commonService "github.com/issueye/build_magic/backend/common/service"
 	"github.com/issueye/build_magic/backend/global"
-	"github.com/issueye/build_magic/backend/logic"
 	"github.com/issueye/build_magic/backend/repository"
 	"github.com/issueye/build_magic/backend/service"
 )
@@ -76,23 +75,4 @@ func (lc *DataModel) Delete(id string) error {
 func (lc *DataModel) Modify(data *repository.RequestModifyDataModel) error {
 	srv := commonService.NewService(&service.DataModel{})
 	return srv.Modify(data)
-}
-
-// 运行代码
-func (lc *DataModel) RunCode(dmId string) error {
-	err := logic.NewCodeLogic(lc.Ctx).RunCode(dmId, false, "")
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (lc *DataModel) TestRunCode(dmId string, tpId string) error {
-	err := logic.NewCodeLogic(lc.Ctx).RunCode(dmId, true, tpId)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

@@ -4,7 +4,7 @@ import { Ref, ref } from "vue";
 import {
     List,
     GetTree
-} from "@/wailsjs/go/main/Template";
+} from "@/wailsjs/go/controller/Template";
 import { model, repository } from "@/wailsjs/go/models";
 
 

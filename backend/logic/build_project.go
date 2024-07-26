@@ -14,8 +14,28 @@ type BuildProject struct{}
 // Create
 // 添加[构建项目]信息
 func (owner *BuildProject) Create(data *repository.CreateBuildProject) error {
+	// 创建一条数据到方案中
+	tplc := new(Template)
+	id, err := tplc.CreateNode(&repository.CreateChildScheme{
+		Title:      data.Title,
+		ParentCode: "002",
+		NodeType:   2,
+		FileType:   2,
+		Icon:       "vscode-icons:folder-type-buildkite",
+	})
+
+	if err != nil {
+		return err
+	}
+
 	srv := commonService.NewService(&service.BuildProjectService{})
-	return srv.Create(data)
+	data.CodeID = id
+	err = srv.Create(data)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
 
 // Modify
@@ -29,7 +49,21 @@ func (owner *BuildProject) Modify(data *repository.ModifyBuildProject) error {
 // 删除[构建项目]信息
 func (owner *BuildProject) Delete(id string) error {
 	srv := commonService.NewService(&service.BuildProjectService{})
-	return srv.Delete(id)
+
+	// 查询[构建项目]信息
+	buildProject, err := srv.GetById(id)
+	if err != nil {
+		return err
+	}
+
+	err = srv.Delete(id)
+	if err != nil {
+		return err
+	}
+
+	// 删除方案中的数据
+	tplc := new(Template)
+	return tplc.DeleteNode(buildProject.CodeID)
 }
 
 // GetById

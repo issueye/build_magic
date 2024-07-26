@@ -1,7 +1,7 @@
 <template>
   <el-tree
     :data="treeData"
-    class="w-full p-[5px]"
+    class="w-full py-[5px]"
     :expand-on-click-node="false"
     accordion
   >

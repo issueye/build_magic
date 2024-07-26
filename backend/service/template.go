@@ -16,21 +16,22 @@ func (owner *Template) SetBase(base service.BaseService) {
 }
 
 // 创建数据
-func (owner *Template) Create(data *repository.CreateTemplate) error {
-	info := model.NewCodeTemplate(&data.CodeTemplateBase)
-	return owner.GetDB().Model(&model.CodeTemplate{}).Create(info).Error
+func (owner *Template) Create(data *repository.CreateTemplate) (info *model.CodeTemplate, err error) {
+	info = model.NewCodeTemplate(&data.CodeTemplateBase)
+	err = owner.GetDB().Model(&model.CodeTemplate{}).Create(info).Error
+	return
 }
 
 // 通过ID 获取数据
 func (owner *Template) Get(id string) (*model.CodeTemplate, error) {
 	info := &model.CodeTemplate{}
-	return info, owner.GetDB().Model(&model.CodeTemplate{}).Where("ID = ?", id).First(info).Error
+	return info, owner.GetDB().Model(&model.CodeTemplate{}).Where("ID = ?", id).Find(info).Error
 }
 
 // 通过ID 获取数据
 func (owner *Template) GetBySchemeCode(code string) (*model.CodeTemplate, error) {
 	info := &model.CodeTemplate{}
-	return info, owner.GetDB().Model(&model.CodeTemplate{}).Where("scheme_code = ?", code).First(info).Error
+	return info, owner.GetDB().Model(&model.CodeTemplate{}).Where("scheme_code = ?", code).Find(info).Error
 }
 
 // 通过ID 获取数据

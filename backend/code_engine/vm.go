@@ -13,6 +13,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	MAIN_TEMPLATE_CODE = "function main() {const module = (function(exports) {%s;return exports;})(self);return module.main();}"
+)
+
 type Code struct {
 	Path    string
 	Program *goja.Program
@@ -183,17 +187,10 @@ func (jv *JsVM) compile(name string, path string) (pro *goja.Program, err error)
 		}
 
 		code = string(src)
-		code = fmt.Sprintf(`
-		function main() {
-				const module = (function(exports) {
-					%s
-					return exports
-				})(self)
-				return module.main();
-		}`, code)
+		code = fmt.Sprintf(MAIN_TEMPLATE_CODE, code)
 	}
 
-	fmt.Println("code", code)
+	// fmt.Println("code", code)
 	// 编译文件
 	pro, err = goja.Compile(name, code, false)
 	if err != nil {

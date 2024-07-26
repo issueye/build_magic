@@ -120,7 +120,7 @@ import {
 } from "@/wailsjs/go/main/DataModel";
 import {
   ProgrammeList,
-} from "@/wailsjs/go/main/Template";
+} from "@/wailsjs/go/controller/Template";
 import { model, repository } from "@/wailsjs/go/models";
 import { Ref } from "vue";
 import { useRouter } from "vue-router";

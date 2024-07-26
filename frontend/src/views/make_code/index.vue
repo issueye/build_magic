@@ -33,12 +33,12 @@ import { onMounted, onUnmounted, reactive, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import Codemirror from "codemirror-editor-vue3";
 
-import { GetChildrenByCode } from "@/wailsjs/go/main/Template";
+import { GetChildrenByCode } from "@/wailsjs/go/controller/Template";
 import { Ref } from "vue";
 import type { TabsPaneContext } from "element-plus";
 import { EventsOn, EventsOff } from "@/wailsjs/runtime/runtime";
 import { model } from "@/wailsjs/go/models";
-import { RunCode } from "@/wailsjs/go/main/DataModel";
+import { RunCode } from "@/wailsjs/go/controller/Code";
 // import { VxeColumnPropTypes, VxeTableEvents } from "vxe-table";
 
 // 数据

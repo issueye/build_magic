@@ -1,4 +1,4 @@
-package main
+package controller
 
 import (
 	"context"
@@ -29,13 +29,15 @@ func GetTemplate() *Template {
 // 创建数据模型
 func (app *Template) Create(data *repository.CreateTemplate) error {
 	tplc := new(logic.Template)
-	return tplc.CreateNode(&repository.CreateChildScheme{
+	_, err := tplc.CreateNode(&repository.CreateChildScheme{
 		Title:      data.Title,
 		ParentCode: data.SchemeCode,
 		NodeType:   data.NodeType,
 		FileType:   data.FileType,
 		Icon:       data.Icon,
 	})
+
+	return err
 }
 
 func (app *Template) List(condition repository.QryTemplate, page, size int) ([]*model.CodeTemplate, error) {
@@ -49,6 +51,10 @@ func (app *Template) List(condition repository.QryTemplate, page, size int) ([]*
 
 func (app *Template) GetCode(id string) (string, error) {
 	return new(logic.Template).GetCode(id)
+}
+
+func (app *Template) GetCodeBySchemeID(id string) (string, error) {
+	return new(logic.Template).GetCodeBySchemeID(id)
 }
 
 func (app *Template) SaveCode(id string, code string) error {

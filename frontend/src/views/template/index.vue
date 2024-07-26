@@ -69,7 +69,7 @@ import {
   Create,
   DeleteByCode,
   Modify,
-} from "@/wailsjs/go/main/Template";
+} from "@/wailsjs/go/controller/Template";
 import { model } from "@/wailsjs/go/models";
 import { useRouter } from "vue-router";
 import Tree from './components/tree/index.vue';

@@ -7,7 +7,7 @@ toolchain go1.21.6
 require (
 	github.com/appleboy/gin-jwt/v2 v2.9.2
 	github.com/dop251/goja v0.0.0-20240707163329-b1681fb2a2f5
-	github.com/dop251/goja_nodejs v0.0.0-20211022123610-8dd9abb0616d
+	github.com/dop251/goja_nodejs v0.0.0-20230322100729-2550c7b6c124
 	github.com/gin-gonic/gin v1.10.0
 	github.com/glebarez/sqlite v1.11.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
@@ -16,6 +16,7 @@ require (
 	github.com/sohaha/zlsgo v1.7.14
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/wailsapp/wails/v2 v2.9.1
+	go.etcd.io/bbolt v1.3.10
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.2

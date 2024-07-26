@@ -15,6 +15,8 @@ export function GetChildrenByCode(arg1:string):Promise<Array<model.CodeTemplate>
 
 export function GetCode(arg1:string):Promise<string>;
 
+export function GetCodeBySchemeID(arg1:string):Promise<string>;
+
 export function GetTpByCode(arg1:string):Promise<model.CodeTemplate>;
 
 export function GetTree():Promise<Array<repository.SchemeTree>>;

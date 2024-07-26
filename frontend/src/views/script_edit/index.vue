@@ -2,19 +2,22 @@
   <BsHeader :title="mdTitle" description="生成对应代码的模板脚本">
     <template #actions>
       <div class="flex w-[400px] justify-end">
-        <el-button class="mr-5" type="primary" @click="onTestRunClick"
-          >测试</el-button
-        >
+        <el-button class="mr-5" type="primary" @click="onTestRunClick">测试</el-button>
         <el-button @click="onBackClick">返回</el-button>
       </div>
     </template>
   </BsHeader>
   <BsMain :usePadding="false" :diffHeight="44">
     <template #body>
-      <div class="flex flex-col h-full p-1">
-        <div ref="editorContainer" class="mr-1" style="height: 70%"></div>
-        <div class="h-[30%]">
-          <Codemirror v-model:value="logData" :options="cmOptions" />
+      <div class="flex h-full">
+        <div class="h-full w-[20%] px-1" style="border-right: 1px solid #d9d9d9;">
+          <CodeTree  />
+        </div>
+        <div class="flex flex-col h-full w-[80%]">
+          <div ref="editorContainer" style="height: 70%"></div>
+          <div class="h-[30%]">
+            <Codemirror v-model:value="logData" :options="cmOptions" />
+          </div>
         </div>
       </div>
     </template>
@@ -25,10 +28,11 @@
 import { ref, onMounted, toRaw, Ref } from "vue";
 import * as monaco from "monaco-editor";
 import { useRouter, useRoute } from "vue-router";
-import { GetCode, SaveCode } from "@/wailsjs/go/main/Template";
+import { GetCode, SaveCode } from "@/wailsjs/go/controller/Template";
 import { ElMessage } from "element-plus";
+import CodeTree from './components/tree/index.vue';
 
-import { TestRunCode } from "@/wailsjs/go/main/DataModel";
+import { TestRunCode } from "@/wailsjs/go/controller/Code";
 
 import Codemirror, { createLog } from "codemirror-editor-vue3";
 import { EventsOn, EventsOff } from "@/wailsjs/runtime/runtime";
@@ -45,9 +49,15 @@ const editorContainer = ref<any>(null);
 const editor = ref<any>(null);
 
 onMounted(async () => {
-  // const code = await GetCode(id.value as string);
+  const code = await GetCode(id.value as string);
+  
+var initCode = `export function main() {
+    /// 你的代码...
 
-  editor.value = getEditer("", editorContainer);
+    return 'return data'
+}`
+
+  editor.value = getEditer(code || initCode, editorContainer);
 
   // 设置快捷键 ctrl + s
   editor.value.addAction({

@@ -45,6 +45,7 @@ export namespace model {
 	    build_type: number;
 	    version: string;
 	    build_version: number;
+	    code_id: string;
 	    mark: string;
 	
 	    static createFrom(source: any = {}) {
@@ -62,6 +63,7 @@ export namespace model {
 	        this.build_type = source["build_type"];
 	        this.version = source["version"];
 	        this.build_version = source["build_version"];
+	        this.code_id = source["code_id"];
 	        this.mark = source["mark"];
 	    }
 	
@@ -425,6 +427,7 @@ export namespace repository {
 	    build_type: number;
 	    version: string;
 	    build_version: number;
+	    code_id: string;
 	    mark: string;
 	
 	    static createFrom(source: any = {}) {
@@ -439,6 +442,7 @@ export namespace repository {
 	        this.build_type = source["build_type"];
 	        this.version = source["version"];
 	        this.build_version = source["build_version"];
+	        this.code_id = source["code_id"];
 	        this.mark = source["mark"];
 	    }
 	}
@@ -532,6 +536,7 @@ export namespace repository {
 	    build_type: number;
 	    version: string;
 	    build_version: number;
+	    code_id: string;
 	    mark: string;
 	
 	    static createFrom(source: any = {}) {
@@ -549,6 +554,7 @@ export namespace repository {
 	        this.build_type = source["build_type"];
 	        this.version = source["version"];
 	        this.build_version = source["build_version"];
+	        this.code_id = source["code_id"];
 	        this.mark = source["mark"];
 	    }
 	

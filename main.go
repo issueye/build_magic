@@ -59,10 +59,11 @@ func main() {
 		Bind: []interface{}{
 			app,
 			GetDataModel(),
-			GetTemplate(),
 			GeDataSource(),
+			controller.GetTemplate(),
 			controller.GetBuildProject(),
 			controller.GetVariable(),
+			controller.GetCode(),
 		},
 		// Windows platform specific options
 		Windows: &windows.Options{

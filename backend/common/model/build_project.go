@@ -22,6 +22,7 @@ type BuildProjectBase struct {
 	BuildType    int    `gorm:"column:build_type;type:int;comment:构建类型;" json:"build_type"`       // 构建类型
 	Version      string `gorm:"column:version;size:200;comment:版本;" json:"version"`               // 版本
 	BuildVersion int    `gorm:"column:build_version;type:int;comment:构建版本;" json:"build_version"` // 构建版本
+	CodeID       string `gorm:"column:code_id;size:50;comment:代码仓库ID;" json:"code_id"`            // 代码仓库ID
 	Mark         string `gorm:"column:mark;size:2000;comment:备注;" json:"mark"`                    // 备注
 }
 

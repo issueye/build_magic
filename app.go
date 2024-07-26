@@ -28,8 +28,10 @@ func (a *App) domReady(ctx context.Context) {
 	a.ctx = ctx
 
 	GetDataModel().Ctx = ctx
-	GetTemplate().Ctx = ctx
+
 	GeDataSource().Ctx = ctx
+	controller.GetCode().Ctx = ctx
+	controller.GetTemplate().Ctx = ctx
 	controller.GetBuildProject().Ctx = ctx
 	controller.GetVariable().Ctx = ctx
 }

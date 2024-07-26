@@ -29,6 +29,23 @@ func (t *Template) SaveCodeToFile(tpId string, code string) error {
 	return os.WriteFile(path, []byte(code), 0644)
 }
 
+func (t *Template) GetCodeBySchemeID(id string) (string, error) {
+	srv := commonService.NewService(&service.Scheme{})
+	info, err := srv.Get(id)
+	if err != nil {
+		return "", err
+	}
+
+	// 通过 schemeID 获取模板ID
+	tpSrv := commonService.NewService(&service.Template{})
+	tpInfo, err := tpSrv.GetBySchemeCode(info.Code)
+	if err != nil {
+		return "", err
+	}
+
+	return t.GetCode(tpInfo.ID)
+}
+
 // 获取文件内容
 func (t *Template) GetCode(tpId string) (string, error) {
 	srv := commonService.NewService(&service.Template{})
@@ -225,7 +242,7 @@ func (t *Template) CheckOrCreate(code string, title string, path string) {
 		}
 
 		scheme.Nodes = append(scheme.Nodes, code)
-		err = srv.Create(scheme)
+		_, err := srv.Create(scheme)
 		if err != nil {
 			global.Log.Errorf("初始化脚本模板方案失败: %s", err.Error())
 			return
@@ -316,7 +333,7 @@ func (t *Template) ModifyNode(data *repository.ModifyTemplate) (err error) {
 	return
 }
 
-func (t *Template) CreateNode(data *repository.CreateChildScheme) (err error) {
+func (t *Template) CreateNode(data *repository.CreateChildScheme) (tpId string, err error) {
 	// 获取父节点信息
 	srv := commonService.NewService(&service.Scheme{})
 	var parent *model.Scheme
@@ -359,12 +376,16 @@ func (t *Template) CreateNode(data *repository.CreateChildScheme) (err error) {
 	parent.Nodes = append(parent.Nodes, code)
 	info.Nodes = parent.Nodes
 
-	err = srv.Create(info)
+	_, err = srv.Create(info)
+	if err != nil {
+		global.Log.Errorf("初始化脚本模板方案失败: %s", err.Error())
+		return
+	}
 
 	// 如果创建的是文件，则需要创建对应的代码模板
 	if data.NodeType == 2 {
 		tpSrv := commonService.NewService(&service.Template{})
-		err = tpSrv.Create(&repository.CreateTemplate{
+		tpInfo, err := tpSrv.Create(&repository.CreateTemplate{
 			CodeTemplateBase: model.CodeTemplateBase{
 				Title:            data.Title,
 				FileName:         path,
@@ -372,6 +393,12 @@ func (t *Template) CreateNode(data *repository.CreateChildScheme) (err error) {
 				SchemeParentCode: parent.Code,
 			},
 		})
+		if err != nil {
+			global.Log.Errorf("初始化脚本模板方案失败: %s", err.Error())
+			return "", err
+		}
+
+		tpId = tpInfo.ID
 	}
 
 	info.Nodes = append(info.Nodes, data.ParentCode)

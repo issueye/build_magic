@@ -29,57 +29,63 @@ func NewCodeLogic(ctx context.Context) *CodeLogic {
 }
 
 // 运行代码
-func (lc *CodeLogic) RunCode(dmId string, isTest bool, tpCodeId string) error {
+func (lc *CodeLogic) RunCode(tpCodeId string) error {
 	// 结束所有事件
 	defer func() {
 		runtime.EventsOffAll(lc.ctx)
 	}()
 
-	global.Log.Infof("开始运行代码，dmId: %s", dmId)
+	global.Log.Infof("开始运行代码，dmId: %s", tpCodeId)
 
-	// 查询模板信息
-	runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("开始获取模板[%s]信息", dmId))
-	srv := commonService.NewService(&service.DataModel{})
-	info, err := srv.GetById(dmId)
+	// 获取项目
+	runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, "开始获取项目信息")
+	proSrv := commonService.NewService(&service.BuildProjectService{})
+	proInfo, err := proSrv.GetByTpCode(tpCodeId)
 	if err != nil {
-		runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("获取模板[%s]失败 %s", dmId, err))
+		runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, "获取项目失败")
 		return err
 	}
 
 	// 获取数据模板变量
-	runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("开始获取模板[%s]变量", dmId))
-	varList, err := srv.GetVarsByKey(info.ID)
+	runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("开始项目[%s]环境变量", tpCodeId))
+	varSrv := commonService.NewService(&service.VariableService{})
+	varList, err := varSrv.GetVarsByKey(proInfo.ID, 0)
 	if err != nil {
-		runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("获取模板[%s]变量失败 %s", dmId, err))
+		runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("获取项目[%s]环境变量失败 %s", proInfo.Title, err))
 		return err
 	}
 
-	// 获取模板明细信息
-	runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("开始获取模板[%s]明细信息", dmId))
-	columns, err := srv.GetModelInfo(dmId)
+	injectVarList, err := varSrv.GetVarsByKey(proInfo.ID, 1)
 	if err != nil {
-		runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("获取模板明细失败 %s", err))
+		runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("获取项目[%s]嵌入变量失败 %s", proInfo.Title, err))
 		return err
 	}
-
-	// 将信息注入到虚拟机中
-	runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("开始注入模板[%s]信息", dmId))
 
 	vm := global.JsVMCore.GetRuntime()
 	defer global.JsVMCore.PutRuntime(vm)
 
-	vm.SetProperty("dm", "title", info.Title)
-	vm.SetProperty("dm", "tableName", info.TBName)
-	vm.SetProperty("dm", "columns", columns)
+	vm.SetProperty("magic", "title", proInfo.Title)
+	vm.SetProperty("magic", "name", proInfo.Name)
+	vm.SetProperty("magic", "version", proInfo.Version)
+	vm.SetProperty("magic", "build_type", proInfo.BuildType)
+	vm.SetProperty("magic", "build_version", proInfo.BuildVersion)
+	vm.SetProperty("magic", "path", proInfo.ProjectPath)
+
+	runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, "注入环境变量和嵌入变量")
 
 	// 注入变量
 	vars := make(map[string]any)
 	for _, variable := range varList {
-		// fmt.Println("variable", variable)
 		vars[variable.Key] = variable.Value
 	}
 
-	vm.SetProperty("dm", "vars", vars)
+	injectVars := make(map[string]any)
+	for _, variable := range injectVarList {
+		injectVars[variable.Key] = variable.Value
+	}
+
+	vm.SetProperty("magic", "env", vars)
+	vm.SetProperty("magic", "inject", injectVars)
 
 	vm.SetConsoleCallBack(func(args ...any) {
 		// fmt.Println("args", args)
@@ -90,37 +96,16 @@ func (lc *CodeLogic) RunCode(dmId string, isTest bool, tpCodeId string) error {
 	// 获取代码模板的脚本
 	tpSrv := commonService.NewService(&service.Template{})
 
-	if !isTest {
-		tps, err := tpSrv.GetChildrenByCode(info.SchemeId)
-		if err != nil {
-			return err
-		}
+	runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("开始获取代码[%s]", tpCodeId))
+	tp, err := tpSrv.Get(tpCodeId)
+	if err != nil {
+		runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("获取代码[%s]失败 %s", tpCodeId, err))
+		return err
+	}
 
-		errArr := make([]error, 0)
-		for _, tp := range tps {
-
-			err = lc.runCode(vm, tp)
-			if err != nil {
-				errArr = append(errArr, err)
-			}
-		}
-
-		if len(errArr) > 0 {
-			runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("执行代码失败 %s", errArr))
-			return fmt.Errorf("执行代码失败 %s", errArr)
-		}
-	} else {
-		runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("开始执行测试代码[%s]", tpCodeId))
-		tp, err := tpSrv.Get(tpCodeId)
-		if err != nil {
-			runtime.EventsEmit(lc.ctx, CONSOLE_EVENT, fmt.Sprintf("获取模板[%s]失败 %s", tpCodeId, err))
-			return err
-		}
-
-		err = lc.runCode(vm, tp)
-		if err != nil {
-			return err
-		}
+	err = lc.runCode(vm, tp)
+	if err != nil {
+		return err
 	}
 
 	return nil

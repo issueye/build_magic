@@ -16,9 +16,10 @@ func (owner *Scheme) SetBase(base service.BaseService) {
 }
 
 // 创建数据
-func (owner *Scheme) Create(data *repository.CreateScheme) error {
-	info := model.NewScheme(&data.SchemeBase)
-	return owner.GetDB().Model(&model.Scheme{}).Create(info).Error
+func (owner *Scheme) Create(data *repository.CreateScheme) (info *model.Scheme, err error) {
+	info = model.NewScheme(&data.SchemeBase)
+	err = owner.GetDB().Model(&model.Scheme{}).Create(info).Error
+	return info, err
 }
 
 // 通过ID 获取数据
