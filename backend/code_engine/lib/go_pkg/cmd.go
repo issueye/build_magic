@@ -10,7 +10,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
-	"github.com/issueye/build_magic/backend/pkg/utils"
+	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
 var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP", "TEMP", "PATH"}
@@ -158,7 +158,7 @@ func (e *Exec) RunCommand(name string, args []string, callback func(string)) err
 
 			output := buf[:strNum]
 
-			callback(utils.Bytes2String(output))
+			callback(ConvertByte2String(output, GB18030))
 		}
 	}()
 
@@ -183,7 +183,7 @@ func InitCmd() {
 	require.RegisterNativeModule("go/cmd", func(runtime *goja.Runtime, module *goja.Object) {
 		o := module.Get("exports").(*goja.Object)
 
-		o.Set("NewExec", func(timeOut int) *goja.Object {
+		o.Set("newExec", func(timeOut int) *goja.Object {
 			return NewExecJs(runtime, NewExec(int64(timeOut)))
 		})
 	})
@@ -199,4 +199,27 @@ func NewExecJs(vm *goja.Runtime, e *Exec) *goja.Object {
 	obj.Set("runCommand", e.RunCommand)
 
 	return obj
+}
+
+type Charset string
+
+const (
+	UTF8    = Charset("UTF-8")
+	GB18030 = Charset("GB18030")
+)
+
+func ConvertByte2String(byte []byte, charset Charset) string {
+
+	var str string
+	switch charset {
+	case GB18030:
+		decodeBytes, _ := simplifiedchinese.GB18030.NewDecoder().Bytes(byte)
+		str = string(decodeBytes)
+	case UTF8:
+		fallthrough
+	default:
+		str = string(byte)
+	}
+
+	return str
 }
