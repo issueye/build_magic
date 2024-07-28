@@ -5,8 +5,7 @@ import (
 	"log"
 	"runtime"
 
-	"github.com/issueye/build_magic/backend/controller"
-	"github.com/issueye/build_magic/backend/initialize"
+	"github.com/issueye/build_magic/backend"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -22,19 +21,16 @@ var assets embed.FS
 var icon []byte
 
 func main() {
-	// 初始化程序
-	initialize.Initialize()
-
 	// 创建一个 app 对象
-	app := NewApp()
+	app := backend.NewApp()
 
 	// 创建一个wails app
 	err := wails.Run(&options.App{
 		Title:     "build_magic",
 		Width:     1200,
-		Height:    768,
+		Height:    1000,
 		MinWidth:  1200,
-		MinHeight: 768,
+		MinHeight: 1000,
 		// MaxWidth:          1280,
 		// MaxHeight:         800,
 		DisableResize:     false,
@@ -51,20 +47,12 @@ func main() {
 		Menu:             nil,
 		Logger:           nil,
 		LogLevel:         logger.WARNING,
-		OnStartup:        app.startup,
-		OnDomReady:       app.domReady,
-		OnBeforeClose:    app.beforeClose,
-		OnShutdown:       app.shutdown,
+		OnStartup:        app.Startup,
+		OnDomReady:       app.DomReady,
+		OnBeforeClose:    app.BeforeClose,
+		OnShutdown:       app.Shutdown,
 		WindowStartState: options.Normal,
-		Bind: []interface{}{
-			app,
-			GetDataModel(),
-			GeDataSource(),
-			controller.GetTemplate(),
-			controller.GetBuildProject(),
-			controller.GetVariable(),
-			controller.GetCode(),
-		},
+		Bind:             app.GetControllers(),
 		// Windows platform specific options
 		Windows: &windows.Options{
 			WebviewIsTransparent: true,

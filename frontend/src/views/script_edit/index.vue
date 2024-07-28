@@ -2,7 +2,9 @@
   <BsHeader :title="mdTitle" description="生成对应代码的模板脚本">
     <template #actions>
       <div class="flex w-[400px] justify-end">
-        <el-button class="mr-5" type="primary" @click="onTestRunClick">测试</el-button>
+        <el-button class="mr-5" type="primary" @click="onTestRunClick"
+          >测试</el-button
+        >
         <el-button @click="onBackClick">返回</el-button>
       </div>
     </template>
@@ -10,13 +12,21 @@
   <BsMain :usePadding="false" :diffHeight="44">
     <template #body>
       <div class="flex h-full">
-        <div class="h-full w-[20%] px-1" style="border-right: 1px solid #d9d9d9;">
-          <CodeTree  />
+        <div
+          class="h-full w-[20%] px-1"
+          style="border-right: 1px solid #d9d9d9"
+        >
+          <CodeTree />
         </div>
         <div class="flex flex-col h-full w-[80%]">
           <div ref="editorContainer" style="height: 70%"></div>
           <div class="h-[30%]">
-            <Codemirror v-model:value="logData" :options="cmOptions" />
+            <Codemirror
+              ref="cmRef"
+              v-model:value="logData"
+              :options="cmOptions"
+              @change="onChange"
+            />
           </div>
         </div>
       </div>
@@ -30,17 +40,20 @@ import * as monaco from "monaco-editor";
 import { useRouter, useRoute } from "vue-router";
 import { GetCode, SaveCode } from "@/wailsjs/go/controller/Template";
 import { ElMessage } from "element-plus";
-import CodeTree from './components/tree/index.vue';
+import CodeTree from "./components/tree/index.vue";
 
 import { TestRunCode } from "@/wailsjs/go/controller/Code";
 
 import Codemirror, { createLog } from "codemirror-editor-vue3";
 import { EventsOn, EventsOff } from "@/wailsjs/runtime/runtime";
+import { AnsiUp } from "ansi_up";
 
 const router = useRouter();
 const route = useRoute();
 
 const dmId = ref("");
+
+const cmRef = ref();
 
 const id = ref(route.query["id"]);
 const mdTitle = ref(route.query["title"]);
@@ -48,14 +61,16 @@ const mdTitle = ref(route.query["title"]);
 const editorContainer = ref<any>(null);
 const editor = ref<any>(null);
 
+const ansi_up = new AnsiUp();
+
 onMounted(async () => {
   const code = await GetCode(id.value as string);
-  
-var initCode = `export function main() {
+
+  var initCode = `export function main() {
     /// 你的代码...
 
     return 'return data'
-}`
+}`;
 
   editor.value = getEditer(code || initCode, editorContainer);
 
@@ -117,10 +132,17 @@ const onBackClick = () => {
   router.push("/project");
 };
 
+const onChange = (val: string, cm: any) => {
+  console.log(cm, val);
+
+  const scrollInfo = cm.getScrollInfo();
+  cm.scrollTo(scrollInfo.left, scrollInfo.height);
+};
+
 const onTestRunClick = async () => {
   try {
     EventsOn("console", (data: any) => {
-      logData.value += `${createLog(`${data}\n`, "info")}`;
+      logData.value += `${createLog(data + "\n", "info")}`;
     });
 
     await TestRunCode(dmId.value, id.value as string);

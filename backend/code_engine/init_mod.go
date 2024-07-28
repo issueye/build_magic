@@ -11,9 +11,10 @@ import (
 )
 
 func init() {
+	gopkg.InitCrypto()   // 加密
+	gopkg.InitFilepath() // 文件路径
 	gopkg.InitUtils()
 	gopkg.InitCmd()
-	gopkg.InitFilepath()
 	boltdb.InitBolt()
 
 }

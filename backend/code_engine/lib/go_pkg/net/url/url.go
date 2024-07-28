@@ -23,7 +23,7 @@ func NewURL(runtime *goja.Runtime, u *url.URL) *goja.Object {
 }
 
 func InitUrl() {
-	require.RegisterNativeModule("url", func(runtime *goja.Runtime, module *goja.Object) {
+	require.RegisterNativeModule("go/url", func(runtime *goja.Runtime, module *goja.Object) {
 		o := module.Get("exports").(*goja.Object)
 		o.Set("parse", url.Parse)
 		o.Set("queryEscape", url.QueryEscape)

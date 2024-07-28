@@ -1,0 +1,46 @@
+[
+    {
+        "label": "脚本API文档",
+        "children": [
+            {
+                "label": "go",
+                "children": [
+                    {
+                        "label": "utils",
+                        "file": "docs/go/utils.md"
+                    },
+                    {
+                        "label": "cmd",
+                        "file": "docs/go/cmd.md"
+                    },
+                    {
+                        "label": "filepath",
+                        "file": "docs/go/filepath.md"
+                    },
+                    {
+                        "label": "net",
+                        "children": [
+                            {
+                                "label": "http/client",
+                                "file": "docs/go/net/http.md"
+                            }
+                        ]
+                    },
+                    {
+                        "label": "url",
+                        "file": "docs/go/url.md"
+                    },
+                    {
+                        "label": "db",
+                        "children": [
+                            {
+                                "label": "bolt",
+                                "file": "docs/go/db/bolt.md"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

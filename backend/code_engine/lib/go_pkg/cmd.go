@@ -17,15 +17,17 @@ var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP"
 
 type Exec struct {
 	workDir string
-	ctx     context.Context
-	cancel  context.CancelFunc
 	envs    map[string]string // 环境变量
+	stop    chan struct{}     // 停止信号
+	timeOut int64             // 超时时间
 }
 
 func NewExec(timeOut int64) *Exec {
 
 	ec := &Exec{
-		envs: make(map[string]string),
+		envs:    make(map[string]string),
+		stop:    make(chan struct{}),
+		timeOut: timeOut,
 	}
 
 	// 设置工作目录
@@ -33,12 +35,6 @@ func NewExec(timeOut int64) *Exec {
 		if value := os.Getenv(key); value != "" {
 			ec.envs[key] = value
 		}
-	}
-
-	if timeOut > 0 {
-		ec.ctx, ec.cancel = context.WithTimeout(context.Background(), time.Duration(timeOut)*time.Second)
-	} else {
-		ec.ctx, ec.cancel = context.WithCancel(context.Background())
 	}
 
 	return ec
@@ -68,12 +64,35 @@ func (e *Exec) GetEnv(key string) string {
 	return e.envs[key]
 }
 
-// Run
-// 执行命令行
-func (e *Exec) Run(name string, args ...string) map[string]any {
-	fmt.Println("运行命令：", name, args)
+// Stop
+// 停止命令行
+func (e *Exec) Stop() {
+	e.stop <- struct{}{}
+}
 
-	cmd := exec.Command(name, args...)
+// SetTimeOut
+// 设置超时时间
+func (e *Exec) SetTimeOut(timeOut int64) {
+	e.timeOut = timeOut
+}
+
+// GetTimeOut
+// 获取超时时间
+func (e *Exec) GetTimeOut() int64 {
+	return e.timeOut
+}
+
+func (e *Exec) newRun(name string, args []string, timeOut int64) (ctx context.Context, cancel context.CancelFunc, cmd *exec.Cmd) {
+
+	if timeOut > 0 {
+		ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeOut)*time.Second)
+	} else if timeOut <= 0 && e.timeOut > 0 {
+		ctx, cancel = context.WithTimeout(context.Background(), time.Duration(e.timeOut)*time.Second)
+	} else {
+		ctx, cancel = context.WithCancel(context.Background())
+	}
+
+	cmd = exec.CommandContext(ctx, name, args...)
 
 	// 设置工作区
 	if e.workDir != "" {
@@ -85,6 +104,17 @@ func (e *Exec) Run(name string, args ...string) map[string]any {
 	for k, v := range e.envs {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
 	}
+
+	return
+}
+
+// Run
+// 执行命令行
+func (e *Exec) Run(name string, args ...string) map[string]any {
+	fmt.Println("运行命令：", name, args)
+
+	ctx, cancel, cmd := e.newRun(name, args, 0)
+	defer cancel()
 
 	var outBuf, errBuf strings.Builder // or bytes.Buffer
 	cmd.Stdout = &outBuf
@@ -101,12 +131,20 @@ func (e *Exec) Run(name string, args ...string) map[string]any {
 	select {
 	case err := <-done:
 		{
+			cancel()
 			if err != nil {
 				okResult = false
 			}
 		}
-	case <-e.ctx.Done():
+	case <-e.stop:
 		{
+			cancel()
+			okResult = false
+			_ = cmd.Process.Kill()
+		}
+	case <-ctx.Done():
+		{
+			cancel()
 			okResult = false
 			_ = cmd.Process.Kill()
 		}
@@ -120,20 +158,11 @@ func (e *Exec) Run(name string, args ...string) map[string]any {
 	return map[string]any{"ok": okResult, "stdout": strings.Trim(outBuf.String(), "\n"), "stderr": stderr}
 }
 
-func (e *Exec) RunCommand(name string, args []string, callback func(string)) error {
-	fmt.Println("运行命令：", name, args)
-	cmd := exec.Command(name, args...)
+// pipeline
+// 管道处理
+func (e *Exec) pipeline(ctx context.Context, cancel context.CancelFunc, cmd *exec.Cmd, callback func(string)) error {
 
-	// 设置工作区
-	if e.workDir != "" {
-		cmd.Dir = e.workDir
-	}
-
-	// 设置环境变量
-	cmd.Env = []string{}
-	for k, v := range e.envs {
-		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
-	}
+	defer cancel()
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -150,33 +179,66 @@ func (e *Exec) RunCommand(name string, args []string, callback func(string)) err
 	go func() { done <- cmd.Wait() }()
 	go func() {
 		for {
-			buf := make([]byte, 1024)
-			strNum, err := stdout.Read(buf)
-			if err != nil {
-				break
+			select {
+			case <-e.stop:
+				return
+			case <-ctx.Done():
+				return
+			default:
+				{
+					buf := make([]byte, 1024)
+					strNum, err := stdout.Read(buf)
+					if err != nil {
+						break
+					}
+
+					output := buf[:strNum]
+
+					callback(ConvertByte2String(output, GB18030))
+				}
 			}
-
-			output := buf[:strNum]
-
-			callback(ConvertByte2String(output, GB18030))
 		}
 	}()
 
 	select {
 	case err := <-done:
 		{
+			cancel()
 			if err != nil {
 				return err
 			}
+
+			return nil
 		}
-	case <-e.ctx.Done():
+	case <-ctx.Done():
 		{
+			cancel()
+			_ = cmd.Process.Kill()
+			return nil
+		}
+	case <-e.stop:
+		{
+			cancel()
 			_ = cmd.Process.Kill()
 			return nil
 		}
 	}
+}
 
-	return nil
+// RunTimeOut
+// 运行命令行
+func (e *Exec) RunTimeOut(name string, args []string, timeOut int64, callback func(string)) error {
+	fmt.Println("运行命令：", name, args)
+
+	ctx, cancel, cmd := e.newRun(name, args, timeOut)
+	return e.pipeline(ctx, cancel, cmd, callback)
+}
+
+func (e *Exec) RunCommand(name string, args []string, callback func(string)) error {
+	fmt.Println("运行命令：", name, args)
+
+	ctx, cancel, cmd := e.newRun(name, args, 0)
+	return e.pipeline(ctx, cancel, cmd, callback)
 }
 
 func InitCmd() {
@@ -197,6 +259,8 @@ func NewExecJs(vm *goja.Runtime, e *Exec) *goja.Object {
 	obj.Set("getEnv", e.GetEnv)
 	obj.Set("run", e.Run)
 	obj.Set("runCommand", e.RunCommand)
+	obj.Set("runTimeOut", e.RunTimeOut)
+	obj.Set("stop", e.Stop)
 
 	return obj
 }

@@ -6,18 +6,15 @@ import {
   WindowUnmaximise,
   Quit,
 } from "@/wailsjs/runtime/runtime";
+import emitter from "./utils/eventbus";
+
+import Docs from "@/views/docs/index.vue";
 import { ref } from "vue";
 import { Auth } from "./store/store";
 
 // 侧边栏导航
 const menu = [
-  { text: "首页", href: "/home", icon: "material-symbols:home-app-logo" },
   { text: "项目", href: "/project", icon: "codicon:project" },
-  {
-    text: "数据源",
-    href: "/data_source",
-    icon: "material-symbols-light:dataset-linked-outline-sharp",
-  },
   { text: "模板", href: "/templates", icon: "carbon:template" },
 ];
 // 侧边栏导航激活样式
@@ -50,14 +47,23 @@ const isMaximised = ref(false);
       <div
         class="my-4 flex flex-col gap-4 text-2xl text-gray-500 dark:text-gray-200"
       >
-        <el-tooltip effect="dark" content="设置" placement="right">
+        <el-tooltip effect="dark" content="文档" placement="right">
+          <router-link v-slot="{ isActive }">
+            <Icon
+              icon="hugeicons:document-code"
+              :class="isActive && activeClass"
+              @click="emitter.emit('show-docs')"
+            />
+          </router-link>
+        </el-tooltip>
+        <!-- <el-tooltip effect="dark" content="设置" placement="right">
           <router-link to="/setup" v-slot="{ isActive }">
             <Icon
               icon="ant-design:setting-outlined"
               :class="isActive && activeClass"
             />
           </router-link>
-        </el-tooltip>
+        </el-tooltip> -->
       </div>
     </nav>
     <!-- 内容面板 -->
@@ -102,4 +108,6 @@ const isMaximised = ref(false);
       />
     </div>
   </main>
+
+  <Docs />
 </template>

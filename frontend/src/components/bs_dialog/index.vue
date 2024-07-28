@@ -8,7 +8,7 @@
     :close-on-click-modal="false"
     @opened="onOpen"
   >
-    <div class="p-[20px]">
+    <div :class="props.showPadding ? bodyClass : ''">
       <slot name="body"> </slot>
     </div>
     <div class="flex p-[20px] justify-end" v-if="props.showFooter">
@@ -18,7 +18,7 @@
       </slot>
     </div>
   </el-dialog>
-</template>
+</template> 
 
 <script setup>
 const props = defineProps({
@@ -35,7 +35,13 @@ const props = defineProps({
     default: true,
   },
   width: 500,
+  showPadding: {
+    type: Boolean,
+    default: true,
+  },
 });
+
+const bodyClass = "p-[20px]";
 
 const emits = defineEmits(["close", "open", "save"]);
 

@@ -3,6 +3,7 @@ import { vxeTableInstall } from './vxe-table'
 import { elementInstall } from './element'
 import { customComponentsInstall } from './custom_components'
 import { piniaInstall } from './pinia'
+import { mdInstall } from './md_editor'
 
 
 // 安装
@@ -21,4 +22,7 @@ export const install = (app: any) => {
 
     // pinia
     piniaInstall(app)
+
+    // MD
+    mdInstall(app)
 }

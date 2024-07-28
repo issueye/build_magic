@@ -5,7 +5,7 @@ import { Auth } from "@/store/store";
 
 // 初始化判断本地是否有 token 然后跳转到对应页面
 onBeforeMount(() => {
-  router.push("/home");
+  router.push("/project");
   Auth.logged = true;
 });
 </script>

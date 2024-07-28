@@ -11,7 +11,7 @@ import (
 )
 
 func InitHttp() {
-	require.RegisterNativeModule("http", func(runtime *goja.Runtime, module *goja.Object) {
+	require.RegisterNativeModule("go/net/http", func(runtime *goja.Runtime, module *goja.Object) {
 		o := module.Get("exports").(*goja.Object)
 		o.Set("request", func(call goja.FunctionCall) goja.Value {
 			method := call.Argument(0).String()
