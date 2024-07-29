@@ -11,6 +11,8 @@ import (
 )
 
 func init() {
+	gopkg.InitStrings()  // 字符串
+	gopkg.InitFmt()      // fmt
 	gopkg.InitCrypto()   // 加密
 	gopkg.InitFilepath() // 文件路径
 	gopkg.InitUtils()
